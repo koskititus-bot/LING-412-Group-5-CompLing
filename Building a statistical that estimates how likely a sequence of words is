@@ -1,0 +1,182 @@
+Based on the task shown in the image, here is a detailed breakdown of what Statistical Language Modelling entails, along with how to approach building bigram and trigram language models.
+📌 Overview of Task 5: Statistical Language Modelling
+ * Weight: 15 marks
+ * Target: End of Week 6
+ * Core Purpose: To build simple statistical models that estimate how likely a given sequence of words is to occur in a language.
+🔍 What Are Statistical Language Models?
+A Statistical Language Model (SLM) assigns a probability to a sequence of words P(w_1, w_2, \dots, w_n). Using the Chain Rule of Probability, the joint probability of a sequence can be decomposed as:
+Because tracking the history of all preceding words (w_1 to w_{k-1}) is practically impossible for long sentences due to data sparsity, we use the Markov assumption. This assumption states that the probability of a word depends only on the preceding N-1 words.
+🛠️ What You Need to Do
+1. Build a Bigram Language Model (N=2)
+A bigram model assumes that the probability of a word depends only on the single immediate preceding word:
+
+ * Probability Formula:
+   
+   
+   (Where C(w_{i-1}, w_i) is the count of the bigram in your training corpus, and C(w_{i-1}) is the total count of the unigram w_{i-1}).
+2. Build a Trigram Language Model (N=3)
+A trigram model assumes that the probability of a word depends on the two preceding words:
+
+ * Probability Formula:
+   
+   
+   (Where the numerator is the count of the trigram sequence, and the denominator is the count of the preceding bigram).
+📝 Recommended Steps to Complete the Task
+ * Preprocessing Corpus:
+   * Clean and tokenize your training text (convert to lowercase, handle punctuation, etc.).
+   * Add sentence boundary markers (e.g., <s> for start of sentence and </s> for end of sentence) to help the model learn how sentences begin and end.
+ * Frequency Counting:
+   * Count unigrams, bigrams, and trigrams using Python data structures (like dictionaries, collections.Counter, or pandas).
+ * Probability Calculation & Evaluation:
+   * Compute the maximum likelihood estimation (MLE) probabilities for both models.
+   * Bonus/Best Practice: Implement smoothing (such as Laplace/Add-one smoothing) to handle zero-probability issues for unseen word combinations in your test data.
+   * Evaluate the models by calculating the perplexity or scoring sample sentences to see which model makes better predictions.
+import math
+from collections import Counter, defaultdict
+
+
+class StatisticalLanguageModel:
+
+  def __init__(self, corpus):
+    """Initializes the language model with a text corpus (list of sentences)."""
+    self.corpus = corpus
+    self.unigram_counts = Counter()
+    self.bigram_counts = Counter()
+    self.trigram_counts = Counter()
+    self.vocabulary = set()
+
+    self._train()
+
+  def _preprocess_and_tokenize(self, sentence):
+    """Tokenizes a sentence and adds padding for N-gram models."""
+    tokens = sentence.lower().split()
+    return tokens
+
+  def _train(self):
+    """Counts unigrams, bigrams, trigrams and builds the vocabulary."""
+    for sentence in self.corpus:
+      tokens = self._preprocess_and_tokenize(sentence)
+      # Pad sentences with start (<s>) and end (</s>) tokens
+      # Trigram needs two start tokens, bigram needs one
+      padded_tokens = ["<s>", "<s>"] + tokens + ["</s>"]
+
+      for i in range(len(padded_tokens)):
+        token = padded_tokens[i]
+        self.unigram_counts[token] += 1
+        self.vocabulary.add(token)
+
+        # Bigram history: 1 previous word
+        if i >= 1:
+          bigram = (padded_tokens[i - 1], token)
+          self.bigram_counts[bigram] += 1
+
+        # Trigram history: 2 previous words
+        if i >= 2:
+          trigram = (padded_tokens[i - 2], padded_tokens[i - 1], token)
+          self.trigram_counts[trigram] += 1
+
+    self.vocab_size = len(self.vocabulary)
+
+  # --- BIGRAM MODEL ---
+  def bigram_probability(self, word, prev_word, smoothed=True):
+    """Calculates P(word | prev_word) with optional Laplace smoothing."""
+    bigram = (prev_word, word)
+    if smoothed:
+      # Laplace (Add-1) Smoothing formula: (C(w_i-1, w_i) + 1) / (C(w_i-1) + V)
+      numerator = self.bigram_counts[bigram] + 1
+      denominator = self.unigram_counts[prev_word] + self.vocab_size
+      return numerator / denominator
+    else:
+      # Maximum Likelihood Estimation (MLE) without smoothing
+      prev_count = self.unigram_counts[prev_word]
+      if prev_count == 0:
+        return 0.0
+      return self.bigram_counts[bigram] / prev_count
+
+  def score_sentence_bigram(self, sentence, smoothed=True):
+    """Calculates the probability of a full sentence using the bigram model."""
+    tokens = self._preprocess_and_tokenize(sentence)
+    padded_tokens = ["<s>"] + tokens + ["</s>"]
+    probability = 1.0
+
+    for i in range(1, len(padded_tokens)):
+      prev_word = padded_tokens[i - 1]
+      word = padded_tokens[i]
+      prob = self.bigram_probability(word, prev_word, smoothed)
+      probability *= prob
+
+    return probability
+
+  # --- TRIGRAM MODEL ---
+  def trigram_probability(self, word, prev_prev_word, prev_word, smoothed=True):
+    """Calculates P(word | prev_prev_word, prev_word) with optional Laplace smoothing."""
+    trigram = (prev_prev_word, prev_word, word)
+    bigram_history = (prev_prev_word, prev_word)
+
+    if smoothed:
+      # Laplace (Add-1) Smoothing for Trigrams
+      numerator = self.trigram_counts[trigram] + 1
+      denominator = self.bigram_counts[bigram_history] + self.vocab_size
+      return numerator / denominator
+    else:
+      # MLE without smoothing
+      history_count = self.bigram_counts[bigram_history]
+      if history_count == 0:
+        return 0.0
+      return self.trigram_counts[trigram] / history_count
+
+  def score_sentence_trigram(self, sentence, smoothed=True):
+    """Calculates the probability of a full sentence using the trigram model."""
+    tokens = self._preprocess_and_tokenize(sentence)
+    padded_tokens = ["<s>", "<s>"] + tokens + ["</s>"]
+    probability = 1.0
+
+    for i in range(2, len(padded_tokens)):
+      prev_prev_word = padded_tokens[i - 2]
+      prev_word = padded_tokens[i - 1]
+      word = padded_tokens[i]
+      prob = self.trigram_probability(
+          word, prev_prev_word, prev_word, smoothed
+      )
+      probability *= prob
+
+    return probability
+
+
+
+Example Usage
+if __name__ == "__main__":
+  # 1. Sample Training Corpus
+  corpus = [
+      "the cat sat on the mat",
+      "the dog chased the cat",
+      "a dog sat on the rug",
+      "the cat ate the fish",
+  ]
+
+  # 2. Initialize Model
+  slm = StatisticalLanguageModel(corpus)
+
+  # 3. Test Sentences
+  test_sentence_1 = "the cat sat on the mat"
+  test_sentence_2 = "a cat chased the fish"  # Contains unseen patterns
+
+  print("--- Bigram Model Results ---")
+  print(
+      f"Score for '{test_sentence_1}':"
+      f" {slm.score_sentence_bigram(test_sentence_1):.6f}"
+  )
+  print(
+      f"Score for '{test_sentence_2}' (Smoothed):"
+      f" {slm.score_sentence_bigram(test_sentence_2, smoothed=True):.6f}"
+  )
+
+  print("\n--- Trigram Model Results ---")
+  print(
+      f"Score for '{test_sentence_1}':"
+      f" {slm.score_sentence_trigram(test_sentence_1):.6f}"
+  )
+  print(
+      f"Score for '{test_sentence_2}' (Smoothed):"
+      f" {slm.score_sentence_trigram(test_sentence_2, smoothed=True):.6f}"
+  )
