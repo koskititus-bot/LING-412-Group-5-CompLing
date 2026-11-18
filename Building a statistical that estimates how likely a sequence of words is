@@ -1,12 +1,9 @@
-Based on the task shown in the image, here is a detailed breakdown of what Statistical Language Modelling entails, along with how to approach building bigram and trigram language models.
-📌 Overview of Task 5: Statistical Language Modelling
- * Weight: 15 marks
- * Target: End of Week 6
+
  * Core Purpose: To build simple statistical models that estimate how likely a given sequence of words is to occur in a language.
 🔍 What Are Statistical Language Models?
 A Statistical Language Model (SLM) assigns a probability to a sequence of words P(w_1, w_2, \dots, w_n). Using the Chain Rule of Probability, the joint probability of a sequence can be decomposed as:
 Because tracking the history of all preceding words (w_1 to w_{k-1}) is practically impossible for long sentences due to data sparsity, we use the Markov assumption. This assumption states that the probability of a word depends only on the preceding N-1 words.
-🛠️ What You Need to Do
+
 1. Build a Bigram Language Model (N=2)
 A bigram model assumes that the probability of a word depends only on the single immediate preceding word:
 
