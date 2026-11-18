@@ -1,0 +1,46 @@
+Hapa kuna mfano wa jinsi ya kueleza na kutekeleza Statistical Language Modelling (Uundaji wa Mifano ya Kistatistiki ya Lugha) kwa kutumia lugha ya Kiswahili, kulingana na kazi iliyo kwenye picha (kutengeneza mfano wa bigram na trigram).
+Dhana Muhimu (The Concepts)
+ * Bigram Model: Mfano unaotabiri neno linalofuata kwa kuangalia neno lilizotangulia mara moja (P(w_i \vert{} w_{i-1})).
+ * Trigram Model: Mfano unaotabiri neno linalofuata kwa kuangalia maneno mawili yaliyotangulia (P(w_i \vert{} w_{i-2}, w_{i-1})).
+Mfano wa Maandishi (Corpus)
+Tuseme tuna sentensi hizi mbili kama mkusanyiko wetu wa data (corpus):
+ * "Mtoto anakula ndizi"
+ * "Mtoto anakula chakula"
+Tunaongeza alama maalum kuonyesha mwanzo (\langle s \rangle) na mwisho (\langle /s \rangle) wa sentensi:
+ * <s> Mtoto anakula ndizi </s>
+ * <s> Mtoto anakula chakula </s>
+1. Bigram Language Model
+Katika mfano huu, tunahesabu mara ngapi neno linatokea baada ya neno lililopita.
+Kuhesabu Jozi za Maneno (Bigram Counts):
+ * <s> \rightarrow Mtoto: 2
+ * Mtoto \rightarrow anakula: 2
+ * anakula \rightarrow ndizi: 1
+ * anakula \rightarrow chakula: 1
+ * ndizi \rightarrow </s>: 1
+ * chakula \rightarrow </s>: 1
+Kukadiria Uwezekano (Probabilities):
+Fomula ya uwezekano wa bigram ni:
+
+ * Uwezekano wa neno "anakula" ikifuata "Mtoto":
+   
+ * Uwezekano wa neno "ndizi" ikifuata "anakula":
+   
+2. Trigram Language Model
+Katika mfano huu, tunachunguza maneno mawili yaliyotangulia ili kutabiri neno la tatu.
+Kuhesabu Vifungu vya Maneno Matatu (Trigram Counts):
+ * <s>, Mtoto \rightarrow anakula: 2
+ * Mtoto, anakula \rightarrow ndizi: 1
+ * Mtoto, anakula \rightarrow chakula: 1
+ * anakula, ndizi \rightarrow </s>: 1
+ * anakula, chakula \rightarrow </s>: 1
+Kukadiria Uwezekano (Probabilities):
+Fomula ya uwezekano wa trigram ni:
+
+ * Uwezekano wa neno "ndizi" likitanguliwa na "Mtoto anakula":
+   
+ * Uwezekano wa neno "chakula" likitanguliwa na "Mtoto anakula":
+   
+Kuchunguza Uwezekano wa Sentensi Kamili
+Kutumia mfano wetu wa Bigram, tunaweza kukokotoa uwezekano wa sentensi mpya "Mtoto anakula ndizi" kama ifuatavyo:
+Hii inatusaidia kujua jinsi mlolongo huu wa maneno ulivyo na uwezekano mkubwa wa kutokea katika lugha ya Kiswahili kulingana na data zetu.
+
